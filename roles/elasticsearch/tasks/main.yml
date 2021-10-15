@@ -1,0 +1,94 @@
+---
+#
+# Installing Elasticsearch
+#
+
+## Add Elasticsearch gpg key
+
+- name: Check Elasticsearch repository is added
+  yum_repository:
+    name: elasticsearch
+    description: elasticsearch package repository
+    baseurl: https://artifacts.elastic.co/packages/7.x/yum
+    gpgkey: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+    gpgcheck: yes
+
+- name: Check Elasticsearch gpg key is imported
+  rpm_key:
+    state: present
+    key: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+
+# Installing Elasticsearch
+
+- name: Install Elasticsearch
+  dnf:
+   name: elasticsearch
+   update_cache: yes
+   
+# Update Elasticsearch config file to allow access (to secure Elasticsearch, bind to 'localhost'). 
+
+- name: Updating the config file to allow outside access
+  lineinfile:
+   destfile: /etc/elasticsearch/elasticsearch.yml
+   regexp: 'network.host:'
+   line: 'network.host: localhost'
+ 
+# Update Elasticsearch port in config file 
+
+- name: Updating the port in config file 
+  lineinfile:
+   destfile: /etc/elasticsearch/elasticsearch.yml
+   regexp: 'http.port:'
+   line: 'http.port: 9200'
+
+# Update Elasticsearch for storage node data locally
+
+- name: Settings for single-node install in config file
+  lineinfile:
+   destfile: /etc/elasticsearch/elasticsearch.yml
+   regexp: 'node.data:'
+   line: 'node.data: true'
+
+# Provide localhost for master-eligible Elasticsearch node
+
+- name: Settings for single-node install in config file
+  lineinfile:
+   destfile: /etc/elasticsearch/elasticsearch.yml
+   regexp: 'discovery.seed_hosts:'
+   line: 'discovery.seed_hosts: ["localhost"]'
+
+# Provide localhost for cluster-initial-master Elasticsearch node
+
+- name: Settings for single-node install in config file
+  lineinfile:
+   destfile: /etc/elasticsearch/elasticsearch.yml
+   regexp: 'cluster.initial_master_nodes:'
+   line: 'cluster.initial_master_nodes: ["localhost"]'
+
+# Provide localhost for node-name
+
+- name: Settings for single-node install in config file
+  lineinfile:
+   destfile: /etc/elasticsearch/elasticsearch.yml
+   regexp: 'node.name:'
+   line: 'node.name: localhost'
+
+- name: Check Elasticsearch service added to firewalld
+  firewalld:
+    service: elasticsearch
+    state: enabled
+    permanent: yes
+    immediate: yes
+- name: Check port 9200 added to firewalld
+  firewalld:
+    port: 9200/tcp
+    state: enabled
+    permanent: yes
+    immediate: yes
+
+# Start Elasticsearch
+
+- name: Starting Elasticsearch
+  service:
+   name: elasticsearch
+   state: started

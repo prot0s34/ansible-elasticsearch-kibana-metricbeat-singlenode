@@ -1,0 +1,26 @@
+---
+#
+## Installing Java 8
+#
+
+## Add the Java repo
+
+#- name: Add the Java PPA repo
+#  yum_repository: 
+#   repo: ppa:webupd8team/java
+
+## Accept Oracle license
+#
+#- name: Automatically accept the Oracle license 
+#  shell: echo debconf shared/accepted-oracle-license-v1-1 select true | sudo debconf-set-selections
+  
+# Install Java 
+- name: Install Java 8 with yum
+  yum:
+    name: '{{ packages }}'
+    state: present
+    update_cache: yes
+  vars:
+    packages:
+      - java-1.8.0-openjdk
+      - java-1.8.0-openjdk-devel
